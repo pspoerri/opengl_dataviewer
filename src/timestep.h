@@ -3,10 +3,12 @@
 
 #include <QDebug>
 #include "opengl.h"
+#include "datatypes.h"
 class Timestep { // VERY BAD CODE
+public:
   float4* data;
   int elements;
-  explicit Timestep(size elements) {
+  explicit Timestep(int elements) {
     data = (float4*) malloc(elements*sizeof(float4));
     this->elements = elements;
   }

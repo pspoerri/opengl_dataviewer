@@ -13,13 +13,31 @@
 
 ////////////////////////////////////////////////////////
 // Constants for the display
+int window_height = 600;
+int window_width = 800;
 
-// vbo variables
+////////////////////////////////////////////////////////
+// Definitions for OpenGL
 GLuint positionsVBO;
+/* This is a handle to the shader program */
+GLuint shaderProgram;
 
+/* These pointers will receive the contents of our shader source code files */
+GLchar *vertexSource, *fragmentSource;
+
+/* These are handles used to reference the shaders */
+GLuint vertexShader, fragmentShader;
+
+const unsigned int shaderAtribute = 0;
+
+const float NUM_OF_VERTICES_IN_DATA=3;
+
+/////////////////////////////////////////////////////////
+// Other variables
 float anim = 0.0;
 int pauseFlag = 0;
 int frames =0;
+int current_frame = 0;
 
 QTime timer;
 
@@ -38,7 +56,8 @@ float3 camera_direction;
 float3 camera_up;
 
 // OpenGL related
-CUTBoolean initGL();
+//CUTBoolean initGL();
+void initGL();
 void createVBO( GLuint* vbo);
 void deleteVBO( GLuint* vbo);
 
@@ -51,7 +70,7 @@ void motion(int x, int y);
 // Runtime
 void showFPS(float fps);
 void runTimestep();
-void run(int argc, char** argv);
+void run(int argc, char** argv, QString filename);
 
 ///////////////////////////////////////////////////////
 // Vector functions

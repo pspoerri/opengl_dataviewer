@@ -2,94 +2,74 @@
 #include "data.h"
 
 int main ( int argc, char *argv[] ) {
-
-  if ( argc != 2 ) { // argc should be 2 for correct execution
-    // We print argv[0] assuming it is the program name
+  if ( argc != 2 ) {
     qDebug() <<"usage: "<< argv[0] <<" <filename>";
     exit(EXIT_FAILURE);
   }
-  qDebug() << "\nStarting BarnesHut GPU with OpenGL output ";
-  qDebug() << "-----------------------------------------";
-
   QTextStream cout(stdout, QIODevice::WriteOnly); // Standard output
 
-  //CUT_DEVICE_INIT();
   QString filename(argv[1]);
   qDebug() << "Reading" << filename;
-
   readFile(filename);
-
   timer.start();
-
-  run(argc,argv);
+  run(argc,argv,filename);
 }
-void run(int argc, char** argv) {
-//  cudaGLSetGLDevice(0);
+void run(int argc, char** argv, QString filename) {
+    glutInit(&argc,argv);
+    glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
+    glutInitWindowSize( window_width, window_height);
+    QString windowName("Displaying "+filename);
+    glutCreateWindow(windowName.toAscii());
 
-  glutInit(&argc,argv);
+    initGL();
 
-  glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
-  glutInitWindowSize( window_width, window_height);
-  glutCreateWindow( "BarnesHut Test");
+    // Set Camera
+    camera_position.x = -10.0f;
+    camera_position.y = -10.0f;
+    camera_position.z = 10.0f;
 
-  // initialize GL
-   if( CUTFalse == initGL()) {
-       return;
-   }
+    camera_direction.x = -camera_position.x;
+    camera_direction.y = -camera_position.y;
+    camera_direction.z = -camera_position.z;
+    normalize3(&camera_direction);
 
-   // Set Camera
-   camera_position.x = -10.0f;
-   camera_position.y = -10.0f;
-   camera_position.z = 10.0f;
+    camera_up.x = 0.0;
+    camera_up.y = 1.0;
+    camera_up.z = 0.0;
+    // register functions for glut
+    glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
+    glutMouseFunc(mouse);
+    glutMotionFunc(motion);
 
-   camera_direction.x = -camera_position.x;
-   camera_direction.y = -camera_position.y;
-   camera_direction.z = -camera_position.z;
-   normalize3(&camera_direction);
+   // Init OpenGL
 
-   camera_up.x = 0.0;
-   camera_up.y = 1.0;
-   camera_up.z = 0.0;
-
-//   // register functions for glut
-   glutDisplayFunc(display);
-   glutKeyboardFunc(keyboard);
-   glutMouseFunc(mouse);
-   glutMotionFunc(motion);
-
-   // create VBO
-
-  glGenBuffers(1, &positionsVBO);
-  glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
-  unsigned int size = barneshut->getElements() * sizeof(float4);
-  glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  //cudaGraphicsGLRegisterBuffer(&positionsVBO_CUDA, positionsVBO, cudaGraphicsMapFlagsWriteDiscard);
-  CUDA_SAFE_CALL(cudaGLRegisterBufferObject(positionsVBO));
-  CUT_CHECK_ERROR_GL();
-  glutMainLoop();
+    int elements = timesteps[0].elements;
+    unsigned int glbuffersize = elements*sizeof(float4);
+    glGenBuffers(1, &positionsVBO);
+    glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
+    glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[0].data,GL_DYNAMIC_DRAW);
+//    glVertexAttribPointer(shaderAtribute,3,GL_FLOAT,GL_FALSE,0,0);
+//    glEnableVertexAttribArray(shaderAtribute);
+    glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
+    glutMainLoop();
 }
 
-void runTimestep() {
-  qDebug() << "Running new timestep";
-  barneshut->runComputation();
-  barneshut->computeNextStep();
-
-}
 
 void display() {
   // Our input
-  int elements = barneshut->getElements();
-
+//  int elements = barneshut->getElements();
   timer.restart();
-  if (!pauseFlag) {
-    float4 *d_particles = barneshut->getCudaParticlePointer();
-    float *d_opengl;
-    CUDA_SAFE_CALL(cudaGLMapBufferObject( (void**)&d_opengl, positionsVBO));
-    runTimestep();
-    CUDA_SAFE_CALL(cudaMemcpy(d_opengl,d_particles,elements*sizeof(float4),cudaMemcpyDeviceToDevice));
-    CUDA_SAFE_CALL(cudaGLUnmapBufferObject(positionsVBO));
-  }
+  int elements = timesteps[current_frame].elements;
+
+  if (frames % 10 == 0)
+      if (!pauseFlag) {
+          if (current_frame >= max_frame_number)
+              current_frame = 0;
+          unsigned int glbuffersize = elements*sizeof(float4);
+          glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[current_frame].data,GL_DYNAMIC_DRAW);
+        current_frame++;
+      }
   long int elapsedTime = timer.elapsed();
 
   // Render from buffer object
@@ -117,10 +97,10 @@ void display() {
   glutSwapBuffers();
   glutPostRedisplay();
   qDebug() << "rX:"<<rotate_x << "ry:"<<rotate_y <<"pX:" << posX << "pY:" <<posY << "pZ:" << posZ;
-
+  frames++;
 }
 
-CUTBoolean initGL() {
+void initGL() {
   // initialize necessary OpenGL extensions
   glewInit();
   if (! glewIsSupported( "GL_VERSION_2_0 "
@@ -128,7 +108,7 @@ CUTBoolean initGL() {
   )) {
       fprintf( stderr, "ERROR: Support for necessary OpenGL extensions missing.");
       fflush( stderr);
-      return CUTFalse;
+      exit(EXIT_FAILURE);
   }
 
   // default initialization
@@ -143,8 +123,6 @@ CUTBoolean initGL() {
   glLoadIdentity();
   gluPerspective(60.0, (GLfloat)window_width / (GLfloat) window_height, 0.1, 100000.0);
 
-  CUT_CHECK_ERROR_GL();
-  return CUTTrue;
 }
 
 void showFPS(float fps) {

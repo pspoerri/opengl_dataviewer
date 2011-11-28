@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.6.2)
 
 project(OpenGL_Dataviewer)
 
-#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 #set(CMAKE_VERBOSE_MAKEFILE YES)

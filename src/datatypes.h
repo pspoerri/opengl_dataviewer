@@ -1,11 +1,16 @@
-#ifndef DATATYPES_H
-#define DATATYPES_H
+#ifndef __DATATYPES_H_
+#define __DATATYPES_H_
 
 struct float4 {
   float x;
   float y;
   float z;
   float w;
-} float4;
+};
 
+struct float3 {
+  float x;
+  float y;
+  float z;
+};
 #endif

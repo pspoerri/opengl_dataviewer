@@ -8,17 +8,17 @@
 #include <QFile>
 
 std::vector<Timestep> timesteps;
-void readTimestep(int i, QFile file) {
-
-}
+int max_frame_number = 0;
 
 void readFile(QString filename) {
   QFile file(filename);
   QByteArray line;
   int elements_timestep;
-  int timesteps;
-  if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    return -1;
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    qDebug() << "Couldn't open file";
+    exit(EXIT_FAILURE);
+  }
+
 
   float x,y,z,w;
   // Count the number of lines
@@ -36,31 +36,17 @@ void readFile(QString filename) {
     for (int i=0;i<elements_timestep;i++) {
       if (!file.atEnd()) {
         line = file.readLine();
-        if(sscanf(line.data(),"%f %f %f %f", &tx, &ty, &tz, &tmass)==-1) {
+        if(sscanf(line.data(),"%f %f %f %f", &x, &y, &z, &w)==-1) {
           qDebug() << "Error: " << line;
           exit(EXIT_FAILURE);
         }
-        timestamps.back().put(i,x,y,z,w);
+        timesteps.back().put(i,x,y,z,w);
       } else {
         qDebug() << "File has wrong format...";
       }
 
     }
-  }
-  // Go to beginning again
-  file.seek(0);
-  if (nlines<=3) {
-    qDebug() << "File only has"<< nlines << "lines";
-    exit(EXIT_FAILURE);
-  }
-  if (!file.atEnd()) {
-    line = file.readLine();
-    if (sscanf(line.data(),"%d",&elements_timestep)== -1) {
-      qDebug() << "File has wrong format";
-      exit(EXIT_FAILURE);
-    }
-    timesteps = nlines/(elements_timestep+3);
-    steppings = (time)
+    max_frame_number++;
   }
 }
 #endif
