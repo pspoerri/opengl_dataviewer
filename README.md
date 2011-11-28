@@ -32,6 +32,7 @@ The viewer currently only displays data in the form of:
     0 0 10 1 
     [..] 222 
 
+A testfile is located in the testfiles folder.
 Required Packages
 -----------------
 TODO
