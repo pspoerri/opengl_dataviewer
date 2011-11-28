@@ -12,7 +12,8 @@ Use the mouse to look around.
 Press: a/s/d/w or left/down/right/up
 ### Pausing
 Press: p
-
+### Increase or decrease speed of simulation
+Press: + or -
 Running
 ------- 
 
