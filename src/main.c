@@ -78,17 +78,18 @@ void display() {
   timer.restart();
   int elements = timesteps[current_frame].elements;
 
-  if (frames % 10 == 0)
+  if (frames % waitframes == 0) {
       if (!pauseFlag) {
           if (current_frame >= max_frame_number)
               current_frame = 0;
+
+          elements = timesteps[current_frame].elements;
           unsigned int glbuffersize = elements*sizeof(float4);
           glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[current_frame].data,GL_DYNAMIC_DRAW);
         current_frame++;
       }
+  }
   long int elapsedTime = timer.elapsed();
-
-  // Render from buffer object
 
   // Render from buffer object
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -108,8 +109,7 @@ void display() {
   glDrawArrays(GL_POINTS, 0, elements);
   glDisableClientState(GL_VERTEX_ARRAY);
   // Swap buffers
-  showFPS(1000.0/((float)elapsedTime));
-
+//  showFPS(1000.0/((float)elapsedTime));
   glutSwapBuffers();
   glutPostRedisplay();
   qDebug() << "rX:"<<rotate_x << "ry:"<<rotate_y <<"pX:" << posX << "pY:" <<posY << "pZ:" << posZ;
@@ -137,7 +137,7 @@ void initGL() {
   // projection
   glMatrixMode( GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(60.0, (GLfloat)window_width / (GLfloat) window_height, 0.1, 100000.0);
+  gluPerspective(120.0, (GLfloat)window_width / (GLfloat) window_height, 0.1, 100000.0);
 
 }
 
@@ -195,6 +195,14 @@ void keyboard( unsigned char keyIn, int x, int y) {
           pauseFlag = 1;
         else
           pauseFlag = 0;
+        break;
+      case('+'):
+        waitframes += 10;
+        break;
+      case('-'):
+        waitframes -= 10;
+        if (waitframes <= 0)
+          waitframes = 1;
         break;
       case('w'):
         yrotrad = (rotate_y / 180 * 3.141592654f);

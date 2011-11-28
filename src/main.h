@@ -46,8 +46,6 @@ GLuint vertexShader, fragmentShader;
 
 const unsigned int shaderAtribute = 0;
 
-const float NUM_OF_VERTICES_IN_DATA=3;
-
 /////////////////////////////////////////////////////////
 // Other variables
 float anim = 0.0;
@@ -61,10 +59,12 @@ QTime timer;
 int mouse_old_x, mouse_old_y;
 int mouse_buttons = 0;
 float rotate_x = -37.4, rotate_y = -231.399;
-float posX = -10;
-float posY = -10;
+float posX = -100;
+float posY = -100;
 float posZ = 0.0;
-float movingFactor = 10;
+float movingFactor = 100;
+int waitframes = 10; // The number of frames it should wait between each execution
+
 ////////////////////////////////////////////////////////
 // Declarations
 float3 camera_position;
