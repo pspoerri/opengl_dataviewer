@@ -17,6 +17,9 @@
 #include "main.h"
 #include "data.h"
 
+#define USE_GL_POINTS 0
+
+
 int main ( int argc, char *argv[] ) {
   if ( argc != 2 ) {
     qDebug() <<"usage: "<< argv[0] <<" <filename>";
@@ -71,49 +74,71 @@ void run(int argc, char** argv, QString filename) {
     glutMainLoop();
 }
 
+void renderSpheres(Timestep t) {
+    float maxW = t.maxW;
+    glPushMatrix();
+    for (int i=0;i<t.elements;i++) {
+        float4 elems = t.data[i];
+        glPushMatrix();
+            glColor3f(elems.w/maxW,0.0,0.0);
+            glTranslatef(elems.x,elems.y,elems.z);
+            glutSolidSphere(elems.w,10,10);
+        glPopMatrix();
+    }
+    glPopMatrix();
+}
 
 void display() {
-  // Our input
-//  int elements = barneshut->getElements();
-  timer.restart();
-  int elements = timesteps[current_frame].elements;
+    // Our input
+    //  int elements = barneshut->getElements();
+    timer.restart();
 
-  if (frames % waitframes == 0) {
-      if (!pauseFlag) {
-          if (current_frame >= max_frame_number)
-              current_frame = 0;
-
-          elements = timesteps[current_frame].elements;
-          unsigned int glbuffersize = elements*sizeof(float4);
-          glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[current_frame].data,GL_DYNAMIC_DRAW);
+    if (frames % waitframes == 0 && !pauseFlag) {
         current_frame++;
-      }
-  }
-  long int elapsedTime = timer.elapsed();
+        if (current_frame >= max_frame_number)
+            current_frame = 0;
+    }
+    long int elapsedTime = timer.elapsed();
 
-  // Render from buffer object
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Render from buffer object
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // set view matrix
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-//   glTranslatef(0.0, 0.0, -5.0);
-   glRotatef(rotate_x, 1.0, 0.0, 0.0);
-   glRotatef(rotate_y, 0.0, 1.0, 0.0);
-   glTranslated(-posX,-posY,-posZ);
+    // set view matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    //   glTranslatef(0.0, 0.0, -5.0);
+    glRotatef(rotate_x, 1.0, 0.0, 0.0);
+    glRotatef(rotate_y, 0.0, 1.0, 0.0);
+    glTranslated(-posX,-posY,-posZ);
+    // Render
+    if (USE_GL_POINTS) {
+         int elements = timesteps[current_frame].elements;
+         if (frames % waitframes == 0) {
+             if (!pauseFlag) {
+                 if (current_frame >= max_frame_number)
+                     current_frame = 0;
 
-   // Render
-  glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
-  glVertexPointer(4, GL_FLOAT, 0, 0);
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glDrawArrays(GL_POINTS, 0, elements);
-  glDisableClientState(GL_VERTEX_ARRAY);
-  // Swap buffers
-//  showFPS(1000.0/((float)elapsedTime));
-  glutSwapBuffers();
-  glutPostRedisplay();
-  qDebug() << "rX:"<<rotate_x << "ry:"<<rotate_y <<"pX:" << posX << "pY:" <<posY << "pZ:" << posZ;
-  frames++;
+                 elements = timesteps[current_frame].elements;
+                 unsigned int glbuffersize = elements*sizeof(float4);
+                 glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[current_frame].data,GL_DYNAMIC_DRAW);
+       //          renderSpheres(timesteps[current_frame]);
+             }
+         }
+        glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
+        glVertexPointer(4, GL_FLOAT, 0, 0);
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glDrawArrays(GL_POINTS, 0, elements);
+        glDisableClientState(GL_VERTEX_ARRAY);
+    } else {
+        Timestep t = timesteps[current_frame];
+        renderSpheres(t);
+    }
+    // Swap buffers
+    //  showFPS(1000.0/((float)elapsedTime));
+    glutSwapBuffers();
+    glutPostRedisplay();
+    qDebug() << "rX:"<<rotate_x << "ry:"<<rotate_y <<"pX:" << posX << "pY:" <<posY << "pZ:" << posZ;
+    frames++;
 }
 
 void initGL() {

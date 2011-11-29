@@ -24,9 +24,11 @@ class Timestep { // VERY BAD CODE
 public:
   float4* data;
   int elements;
+  float maxW;
   explicit Timestep(int elements) {
     data = (float4*) malloc(elements*sizeof(float4));
     this->elements = elements;
+    maxW = 1.0;
   }
 
   void put(int i,float x, float y, float z, float w) {
@@ -38,6 +40,8 @@ public:
     data[i].y = y;
     data[i].z = z;
     data[i].w = w;
+    if (w > maxW)
+      maxW = w;
   }
 };
 
