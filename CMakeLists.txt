@@ -13,9 +13,16 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 find_package(Qt4 REQUIRED)
 
 #### Glut and OpenGL
-find_package(GLUT REQUIRED)
+find_package(GLUT)
 find_package(GLEW REQUIRED)
 find_package(OpenGL REQUIRED)
+
+#### Only require GLUT but not necessarily Xmu
+if(NOT GLUT_FOUND)
+message(FATAL_ERROR "Could not find GLEW.")
+endif(NOT GLUT_FOUND)
+
+
 
 include(${QT_USE_FILE})
 include_directories(${QT_INCLUDES} ${GLEW_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/src)
@@ -26,5 +33,5 @@ set(MAIN_SRCS
 
 add_executable(Dataviewer ${MAIN_SRCS})
 set_source_files_properties(${MAIN_SRCS} PROPERTIES LANGUAGE CXX)
-target_link_libraries(Dataviewer ${QT_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_LIBRARIES})
+target_link_libraries(Dataviewer ${QT_LIBRARIES} ${GLUT_glut_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_LIBRARIES})
 
