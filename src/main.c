@@ -17,7 +17,7 @@
 #include "main.h"
 #include "data.h"
 
-#define USE_GL_POINTS 0
+#define USE_GL_POINTS 1
 
 
 int main ( int argc, char *argv[] ) {
@@ -67,7 +67,7 @@ void run(int argc, char** argv, QString filename) {
     unsigned int glbuffersize = elements*sizeof(float4);
     glGenBuffers(1, &positionsVBO);
     glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
-    glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[0].data,GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[0].pos,GL_DYNAMIC_DRAW);
 //    glVertexAttribPointer(shaderAtribute,3,GL_FLOAT,GL_FALSE,0,0);
 //    glEnableVertexAttribArray(shaderAtribute);
     glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
@@ -78,11 +78,12 @@ void renderSpheres(Timestep t) {
     float maxW = t.maxW;
     glPushMatrix();
     for (int i=0;i<t.elements;i++) {
-        float4 elems = t.data[i];
+        float4 pos = t.pos[i];
+        float w = t.w[i];
         glPushMatrix();
-            glColor3f(elems.w/maxW,0.0,0.0);
-            glTranslatef(elems.x,elems.y,elems.z);
-            glutSolidSphere(elems.w,10,10);
+            glColor3f(w/maxW,0.0,0.0);
+            glTranslatef(pos.x,pos.y,pos.z);
+            glutSolidSphere(w,10,10);
         glPopMatrix();
     }
     glPopMatrix();
@@ -92,11 +93,20 @@ void display() {
     // Our input
     //  int elements = barneshut->getElements();
     timer.restart();
-
+    int elements = timesteps[current_frame].elements;
     if (frames % waitframes == 0 && !pauseFlag) {
         current_frame++;
         if (current_frame >= max_frame_number)
             current_frame = 0;
+        elements = timesteps[current_frame].elements;
+        if (USE_GL_POINTS) {
+             elements = timesteps[current_frame].elements;
+             unsigned int glbuffersize = elements*sizeof(float4);
+             glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[current_frame].pos,GL_DYNAMIC_DRAW);
+    //          renderSpheres(timesteps[current_frame]);
+
+        }
+
     }
     long int elapsedTime = timer.elapsed();
 
@@ -112,26 +122,16 @@ void display() {
     glTranslated(-posX,-posY,-posZ);
     // Render
     if (USE_GL_POINTS) {
-         int elements = timesteps[current_frame].elements;
-         if (frames % waitframes == 0) {
-             if (!pauseFlag) {
-                 if (current_frame >= max_frame_number)
-                     current_frame = 0;
-
-                 elements = timesteps[current_frame].elements;
-                 unsigned int glbuffersize = elements*sizeof(float4);
-                 glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[current_frame].data,GL_DYNAMIC_DRAW);
-       //          renderSpheres(timesteps[current_frame]);
-             }
-         }
         glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
         glVertexPointer(4, GL_FLOAT, 0, 0);
         glEnableClientState(GL_VERTEX_ARRAY);
         glDrawArrays(GL_POINTS, 0, elements);
         glDisableClientState(GL_VERTEX_ARRAY);
     } else {
-        Timestep t = timesteps[current_frame];
-        renderSpheres(t);
+        if (frames % waitframes == 0) {
+            Timestep t = timesteps[current_frame];
+            renderSpheres(t);
+        }
     }
     // Swap buffers
     //  showFPS(1000.0/((float)elapsedTime));

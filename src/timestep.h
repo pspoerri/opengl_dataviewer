@@ -22,11 +22,13 @@
 #include "datatypes.h"
 class Timestep { // VERY BAD CODE
 public:
-  float4* data;
+  float4* pos;
+  float* w;
   int elements;
   float maxW;
   explicit Timestep(int elements) {
-    data = (float4*) malloc(elements*sizeof(float4));
+    pos = (float4*) malloc(elements*sizeof(float4));
+    w = (float*) malloc(elements*sizeof(float));
     this->elements = elements;
     maxW = 1.0;
   }
@@ -36,10 +38,11 @@ public:
       qDebug() << "Index "<< i << " is not in range";
       exit(EXIT_FAILURE);
     }
-    data[i].x = x;
-    data[i].y = y;
-    data[i].z = z;
-    data[i].w = w;
+    pos[i].x = x;
+    pos[i].y = y;
+    pos[i].z = z;
+    pos[i].w = 1.0;
+    this->w[i] = w;
     if (w > maxW)
       maxW = w;
   }
