@@ -1,9 +1,6 @@
-#version 150
+//out vec4 FragColor;
 
-precision hghp float;
-in vec4 in_Position;
-out vec4 fragColor;
-
-void main(void)
-  fragColor = vec4(in_Position.w,0.0,0.0,1.0);
+void main(void) {
+//  FragColor = vec4(in_Position.w,0.0,0.0,1.0);
+    gl_FragColor = vec4(0.0,1.0,1.0,0.0);
 }

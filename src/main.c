@@ -74,6 +74,7 @@ void run(int argc, char** argv, QString filename) {
 
     initShaders();
     glutMainLoop();
+    //    sleep(10);
 }
 
 void renderSpheres(Timestep t) {
@@ -93,7 +94,6 @@ void renderSpheres(Timestep t) {
 
 void display() {
     // Our input
-    //  int elements = barneshut->getElements();
     timer.restart();
     int elements = timesteps[current_frame].elements;
     if (frames % waitframes == 0 && !pauseFlag) {
@@ -108,9 +108,9 @@ void display() {
              glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[current_frame].pos,GL_DYNAMIC_DRAW);
              glVertexAttribPointer(shaderAtribute, 4, GL_FLOAT, GL_FALSE, 0, 0);
              glEnableVertexAttribArray(shaderAtribute);
+             glUseProgram(shaderProgram);
              glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
     //          renderSpheres(timesteps[current_frame]);
-
         }
 
     }
@@ -131,6 +131,7 @@ void display() {
         glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
         glVertexPointer(4, GL_FLOAT, 0, 0);
         glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableVertexAttribArray(shaderAtribute);
         glUseProgram(shaderProgram);
         glDrawArrays(GL_POINTS, 0, elements);
         glDisableClientState(GL_VERTEX_ARRAY);
@@ -307,8 +308,28 @@ void initShaders() {
     glShaderSource(fragmentShader,1,(const GLchar**)&fragmentSource,0);
 
     glCompileShader(vertexShader);
-    glCompileShader(fragmentShader);
+    int status;
+    glGetShaderiv(vertexShader,GL_COMPILE_STATUS, &status);
+    if (status == 0) {
+        GLint length;
+        glGetShaderiv(vertexShader,GL_INFO_LOG_LENGTH, &length);
+        char *errorStr = new char[length];
+        glGetShaderInfoLog(vertexShader,length,NULL,errorStr);
 
+        qDebug() << "Vertex shader compile error: " << errorStr;
+        qDebug() << "Shader location: "<< vertexShaderLocation;
+        exit(EXIT_FAILURE);
+    }
+    glCompileShader(fragmentShader);
+    glGetShaderiv(fragmentShader,GL_COMPILE_STATUS, &status);
+    if (status == 0) {
+        GLint length;
+        glGetShaderiv(vertexShader,GL_INFO_LOG_LENGTH, &length);
+        char *errorStr = new char[length];
+        glGetShaderInfoLog(vertexShader,length,NULL,errorStr);
+        qDebug() << "Fragment shader compile error:" << errorStr;
+        exit(EXIT_FAILURE);
+    }
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
@@ -319,7 +340,7 @@ void initShaders() {
     glLinkProgram(shaderProgram);
 
 
-//    glUseProgram(shaderProgram);
+    glUseProgram(shaderProgram);
 }
 
 char* readShader(QString filename) {
@@ -329,5 +350,6 @@ char* readShader(QString filename) {
         exit(EXIT_FAILURE);
     }
     QByteArray input = file.readAll();
+    file.close();
     return input.data();
 }

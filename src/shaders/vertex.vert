@@ -1,5 +1,3 @@
-#version 150
-
 in vec4 in_Position;
 
 void main(void) {
