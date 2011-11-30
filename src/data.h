@@ -62,6 +62,7 @@ void readFile(QString filename) {
       }
 
     }
+    timesteps.back().normalize();
     max_frame_number++;
   }
 }

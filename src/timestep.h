@@ -22,30 +22,37 @@
 #include "datatypes.h"
 class Timestep { // VERY BAD CODE
 public:
-  float4* pos;
-  float* w;
-  int elements;
-  float maxW;
-  explicit Timestep(int elements) {
-    pos = (float4*) malloc(elements*sizeof(float4));
-    w = (float*) malloc(elements*sizeof(float));
-    this->elements = elements;
-    maxW = 1.0;
-  }
-
-  void put(int i,float x, float y, float z, float w) {
-    if (i>elements) {
-      qDebug() << "Index "<< i << " is not in range";
-      exit(EXIT_FAILURE);
+    float4* pos;
+    float* w;
+    int elements;
+    float maxW;
+    explicit Timestep(int elements) {
+        pos = (float4*) malloc(elements*sizeof(float4));
+        w = (float*) malloc(elements*sizeof(float));
+        this->elements = elements;
+        maxW = 1.0;
     }
-    pos[i].x = x;
-    pos[i].y = y;
-    pos[i].z = z;
-    pos[i].w = w;
-    this->w[i] = w;
-    if (w > maxW)
-      maxW = w;
-  }
+
+    void put(int i,float x, float y, float z, float w) {
+        if (i>elements) {
+              qDebug() << "Index "<< i << " is not in range";
+              exit(EXIT_FAILURE);
+        }
+        pos[i].x = x;
+        pos[i].y = y;
+        pos[i].z = z;
+        pos[i].w = w;
+        this->w[i] = w;
+        if (w > maxW)
+            maxW = w;
+    }
+    void normalize() {
+        if (maxW == 1.0)
+                return;
+        for (int i=0;i<elements;i++) {
+            pos[i].w/maxW;
+        }
+    }
 };
 
 #endif
