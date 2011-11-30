@@ -41,7 +41,7 @@ public:
     pos[i].x = x;
     pos[i].y = y;
     pos[i].z = z;
-    pos[i].w = 1.0;
+    pos[i].w = w;
     this->w[i] = w;
     if (w > maxW)
       maxW = w;

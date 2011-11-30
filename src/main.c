@@ -68,9 +68,11 @@ void run(int argc, char** argv, QString filename) {
     glGenBuffers(1, &positionsVBO);
     glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
     glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[0].pos,GL_DYNAMIC_DRAW);
-//    glVertexAttribPointer(shaderAtribute,3,GL_FLOAT,GL_FALSE,0,0);
-//    glEnableVertexAttribArray(shaderAtribute);
+    glVertexAttribPointer(shaderAtribute,4,GL_FLOAT,GL_FALSE,0,0);
+    glEnableVertexAttribArray(shaderAtribute);
     glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
+
+    initShaders();
     glutMainLoop();
 }
 
@@ -102,7 +104,11 @@ void display() {
         if (USE_GL_POINTS) {
              elements = timesteps[current_frame].elements;
              unsigned int glbuffersize = elements*sizeof(float4);
+             glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
              glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[current_frame].pos,GL_DYNAMIC_DRAW);
+             glVertexAttribPointer(shaderAtribute, 4, GL_FLOAT, GL_FALSE, 0, 0);
+             glEnableVertexAttribArray(shaderAtribute);
+             glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
     //          renderSpheres(timesteps[current_frame]);
 
         }
@@ -125,8 +131,16 @@ void display() {
         glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
         glVertexPointer(4, GL_FLOAT, 0, 0);
         glEnableClientState(GL_VERTEX_ARRAY);
+        glUseProgram(shaderProgram);
         glDrawArrays(GL_POINTS, 0, elements);
         glDisableClientState(GL_VERTEX_ARRAY);
+        unsigned int glbuffersize = elements*sizeof(float4);
+
+//        glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
+////        glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[0].pos,GL_DYNAMIC_DRAW);
+//        glVertexAttribPointer(shaderAtribute,4,GL_FLOAT,GL_FALSE,0,0);
+//        glEnableVertexAttribArray(shaderAtribute);
+//        glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
     } else {
         if (frames % waitframes == 0) {
             Timestep t = timesteps[current_frame];
@@ -281,4 +295,39 @@ void motion(int x, int y) {
 
     mouse_old_x = x;
     mouse_old_y = y;
+}
+
+void initShaders() {
+    vertexSource = readShader(vertexShaderLocation);
+    fragmentSource = readShader(fragmentShaderLocation);
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+    glShaderSource(vertexShader,1, (const GLchar**)&vertexSource,0);
+    glShaderSource(fragmentShader,1,(const GLchar**)&fragmentSource,0);
+
+    glCompileShader(vertexShader);
+    glCompileShader(fragmentShader);
+
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+
+    glBindAttribLocation(shaderProgram, shaderAtribute, "in_Position");
+
+    /* Link shader program*/
+    glLinkProgram(shaderProgram);
+
+
+//    glUseProgram(shaderProgram);
+}
+
+char* readShader(QString filename) {
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Couldn't open shader"<<filename;
+        exit(EXIT_FAILURE);
+    }
+    QByteArray input = file.readAll();
+    return input.data();
 }

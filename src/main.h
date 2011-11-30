@@ -37,12 +37,11 @@ int window_width = 800;
 GLuint positionsVBO;
 /* This is a handle to the shader program */
 GLuint shaderProgram;
-
-/* These pointers will receive the contents of our shader source code files */
+GLuint vertexShader, fragmentShader;
 GLchar *vertexSource, *fragmentSource;
 
-/* These are handles used to reference the shaders */
-GLuint vertexShader, fragmentShader;
+QString vertexShaderLocation("/home/pascal/ETH/opengl_dataviewer/src/shaders/vertex.vert");
+QString fragmentShaderLocation("/home/pascal/ETH/opengl_dataviewer/src/shaders/fragment.frag");
 
 const unsigned int shaderAtribute = 0;
 
@@ -62,7 +61,7 @@ float rotate_x = -37.4, rotate_y = -231.399;
 float posX = -100;
 float posY = -100;
 float posZ = 0.0;
-float movingFactor = 100;
+float movingFactor = 10;
 int waitframes = 10; // The number of frames it should wait between each execution
 
 ////////////////////////////////////////////////////////
@@ -76,7 +75,8 @@ float3 camera_up;
 void initGL();
 void createVBO( GLuint* vbo);
 void deleteVBO( GLuint* vbo);
-
+char* readShader(QString filename);
+void initShaders();
 // Callbacks
 void display();
 void keyboard( unsigned char key, int x, int y);
@@ -86,6 +86,7 @@ void motion(int x, int y);
 // Runtime
 void showFPS(float fps);
 void runTimestep();
+void renderSpheres(Timestep t);
 void run(int argc, char** argv, QString filename);
 
 ///////////////////////////////////////////////////////
