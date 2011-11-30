@@ -35,6 +35,7 @@ int window_width = 800;
 ////////////////////////////////////////////////////////
 // Definitions for OpenGL
 GLuint positionsVBO;
+
 /* This is a handle to the shader program */
 GLuint shaderProgram;
 GLuint vertexShader, fragmentShader;
@@ -44,6 +45,7 @@ QString vertexShaderLocation("/home/pascal/ETH/opengl_dataviewer/src/shaders/ver
 QString fragmentShaderLocation("/home/pascal/ETH/opengl_dataviewer/src/shaders/fragment.frag");
 
 const unsigned int shaderAtribute = 0;
+
 
 /////////////////////////////////////////////////////////
 // Other variables

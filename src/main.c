@@ -16,7 +16,7 @@
 
 #include "main.h"
 #include "data.h"
-
+#include "stdlib.h"
 #define USE_GL_POINTS 1
 
 
@@ -62,19 +62,21 @@ void run(int argc, char** argv, QString filename) {
     glutMotionFunc(motion);
 
    // Init OpenGL
+    initShaders();
 
     int elements = timesteps[0].elements;
     unsigned int glbuffersize = elements*sizeof(float4);
+
     glGenBuffers(1, &positionsVBO);
+
     glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
     glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[0].pos,GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(shaderAtribute,4,GL_FLOAT,GL_FALSE,0,0);
-    glEnableVertexAttribArray(shaderAtribute);
+//    glVertexAttribPointer(shaderAtribute,4,GL_FLOAT,GL_FALSE,0,0);
+//    glEnableVertexAttribArray(shaderAtribute);
     glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
 
-    initShaders();
     glutMainLoop();
-    //    sleep(10);
+
 }
 
 void renderSpheres(Timestep t) {
@@ -92,27 +94,26 @@ void renderSpheres(Timestep t) {
     glPopMatrix();
 }
 
+void renderPoints(Timestep t) {
+    int elements = t.elements;
+    unsigned int glbuffersize = elements*sizeof(float4);
+    glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
+    glBufferData(GL_ARRAY_BUFFER,glbuffersize,t.pos,GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(shaderAtribute,4,GL_FLOAT,GL_FALSE,0,0);
+    glEnableVertexAttribArray(shaderAtribute);
+    glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
+    glUseProgram(shaderProgram);
+    glDrawArrays(GL_POINTS, 0, elements);
+}
+
 void display() {
     // Our input
     timer.restart();
-    int elements = timesteps[current_frame].elements;
+
     if (frames % waitframes == 0 && !pauseFlag) {
         current_frame++;
         if (current_frame >= max_frame_number)
             current_frame = 0;
-        elements = timesteps[current_frame].elements;
-        if (USE_GL_POINTS) {
-             elements = timesteps[current_frame].elements;
-             unsigned int glbuffersize = elements*sizeof(float4);
-             glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
-             glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[current_frame].pos,GL_DYNAMIC_DRAW);
-             glVertexAttribPointer(shaderAtribute, 4, GL_FLOAT, GL_FALSE, 0, 0);
-             glEnableVertexAttribArray(shaderAtribute);
-             glUseProgram(shaderProgram);
-             glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
-    //          renderSpheres(timesteps[current_frame]);
-        }
-
     }
     long int elapsedTime = timer.elapsed();
 
@@ -127,26 +128,11 @@ void display() {
     glRotatef(rotate_y, 0.0, 1.0, 0.0);
     glTranslated(-posX,-posY,-posZ);
     // Render
+    Timestep t = timesteps[current_frame];
     if (USE_GL_POINTS) {
-        glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
-        glVertexPointer(4, GL_FLOAT, 0, 0);
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableVertexAttribArray(shaderAtribute);
-        glUseProgram(shaderProgram);
-        glDrawArrays(GL_POINTS, 0, elements);
-        glDisableClientState(GL_VERTEX_ARRAY);
-        unsigned int glbuffersize = elements*sizeof(float4);
-
-//        glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
-////        glBufferData(GL_ARRAY_BUFFER,glbuffersize,timesteps[0].pos,GL_DYNAMIC_DRAW);
-//        glVertexAttribPointer(shaderAtribute,4,GL_FLOAT,GL_FALSE,0,0);
-//        glEnableVertexAttribArray(shaderAtribute);
-//        glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
+        renderPoints(t);
     } else {
-        if (frames % waitframes == 0) {
-            Timestep t = timesteps[current_frame];
-            renderSpheres(t);
-        }
+        renderSpheres(t);
     }
     // Swap buffers
     //  showFPS(1000.0/((float)elapsedTime));
@@ -301,11 +287,12 @@ void motion(int x, int y) {
 void initShaders() {
     vertexSource = readShader(vertexShaderLocation);
     fragmentSource = readShader(fragmentShaderLocation);
+    qDebug() << fragmentSource;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    glShaderSource(vertexShader,1, (const GLchar**)&vertexSource,0);
-    glShaderSource(fragmentShader,1,(const GLchar**)&fragmentSource,0);
+    glShaderSource(vertexShader,1, (const GLchar**)&vertexSource,NULL);
+    glShaderSource(fragmentShader,1,(const GLchar**)&fragmentSource,NULL);
 
     glCompileShader(vertexShader);
     int status;
@@ -324,23 +311,24 @@ void initShaders() {
     glGetShaderiv(fragmentShader,GL_COMPILE_STATUS, &status);
     if (status == 0) {
         GLint length;
-        glGetShaderiv(vertexShader,GL_INFO_LOG_LENGTH, &length);
+        glGetShaderiv(fragmentShader,GL_INFO_LOG_LENGTH, &length);
         char *errorStr = new char[length];
-        glGetShaderInfoLog(vertexShader,length,NULL,errorStr);
+        glGetShaderInfoLog(fragmentShader,length,NULL,errorStr);
         qDebug() << "Fragment shader compile error:" << errorStr;
+        qDebug() << "Shader location: "<< fragmentShaderLocation;
         exit(EXIT_FAILURE);
     }
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
 
-    glBindAttribLocation(shaderProgram, shaderAtribute, "in_Position");
+    glBindAttribLocation(shaderProgram, shaderAtribute, "position");
 
     /* Link shader program*/
     glLinkProgram(shaderProgram);
 
 
-    glUseProgram(shaderProgram);
+//    glUseProgram(shaderProgram);
 }
 
 char* readShader(QString filename) {
@@ -351,5 +339,8 @@ char* readShader(QString filename) {
     }
     QByteArray input = file.readAll();
     file.close();
-    return input.data();
+    char *data = (char*) malloc(input.size()+1);
+    memcpy(data, input.data(), input.length());
+    data[input.length()] = 0;
+    return data;
 }
