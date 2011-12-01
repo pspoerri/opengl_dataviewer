@@ -98,12 +98,14 @@ void renderPoints(Timestep t) {
     int elements = t.elements;
     unsigned int glbuffersize = elements*sizeof(float4);
     glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
-    glBufferData(GL_ARRAY_BUFFER,glbuffersize,t.pos,GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER,0,glbuffersize,t.pos);
     glVertexAttribPointer(shaderAtribute,4,GL_FLOAT,GL_FALSE,0,0);
     glEnableVertexAttribArray(shaderAtribute);
     glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
     glUseProgram(shaderProgram);
     glDrawArrays(GL_POINTS, 0, elements);
+    glDisableClientState(GL_VERTEX_ARRAY);
+
 }
 
 void display() {
@@ -127,6 +129,7 @@ void display() {
     glRotatef(rotate_x, 1.0, 0.0, 0.0);
     glRotatef(rotate_y, 0.0, 1.0, 0.0);
     glTranslated(-posX,-posY,-posZ);
+
     // Render
     Timestep t = timesteps[current_frame];
     if (USE_GL_POINTS) {
@@ -134,6 +137,7 @@ void display() {
     } else {
         renderSpheres(t);
     }
+
     // Swap buffers
     //  showFPS(1000.0/((float)elapsedTime));
     glutSwapBuffers();
@@ -168,11 +172,8 @@ void initGL() {
 }
 
 void showFPS(float fps) {
-//  glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glTranslatef(-1.6,-0.9,-2);
-  //  gluOrtho2D(0,window_width,0,window_height);
-//  glMatrixMode(GL_MODELVIEW);
 
   float x = 0.0;
   float y = 0.0;
@@ -186,9 +187,7 @@ void showFPS(float fps) {
     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10,text.toLocal8Bit().data()[i]);
   }
 
-//  glMatrixMode(GL_PROJECTION);
   glPopMatrix();
-//  glMatrixMode(GL_MODELVIEW);
 }
 
 // Event Handlers
@@ -323,12 +322,7 @@ void initShaders() {
     glAttachShader(shaderProgram, fragmentShader);
 
     glBindAttribLocation(shaderProgram, shaderAtribute, "position");
-
-    /* Link shader program*/
     glLinkProgram(shaderProgram);
-
-
-//    glUseProgram(shaderProgram);
 }
 
 char* readShader(QString filename) {
