@@ -27,6 +27,12 @@ endif(NOT GLUT_FOUND)
 include(${QT_USE_FILE})
 include_directories(${QT_INCLUDES} ${GLEW_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/src)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/shaders/fragment.glsl
+    ${CMAKE_CURRENT_BINARY_DIR}/shaders/fragment.glsl COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/shaders/vertex.glsl
+    ${CMAKE_CURRENT_BINARY_DIR}/shaders/fragment.glsl COPYONLY)
+
+
 set(MAIN_SRCS
   src/main.c
 )

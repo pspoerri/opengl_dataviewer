@@ -41,8 +41,8 @@ GLuint shaderProgram;
 GLuint vertexShader, fragmentShader;
 GLchar *vertexSource, *fragmentSource;
 
-QString vertexShaderLocation("/home/pascal/ETH/opengl_dataviewer/src/shaders/vertex.vert");
-QString fragmentShaderLocation("/home/pascal/ETH/opengl_dataviewer/src/shaders/fragment.frag");
+QString vertexShaderLocation("shaders/vertex.glsl");
+QString fragmentShaderLocation("shaders/fragment.glsl");
 
 const unsigned int shaderAtribute = 0;
 
