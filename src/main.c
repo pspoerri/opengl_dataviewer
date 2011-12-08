@@ -35,7 +35,8 @@ int main ( int argc, char *argv[] ) {
 }
 void run(int argc, char** argv, QString filename) {
     glutInit(&argc,argv);
-    glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
+//    glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_ALPHA | GLUT_STENCIL);
     glutInitWindowSize( window_width, window_height);
     QString windowName("Displaying "+filename);
     glutCreateWindow(windowName.toAscii());
@@ -95,9 +96,16 @@ void renderSpheres(Timestep t) {
 }
 
 void renderPoints(Timestep t) {
+
+
     int elements = t.elements;
     unsigned int glbuffersize = elements*sizeof(float4);
     glBindBuffer(GL_ARRAY_BUFFER,positionsVBO);
+    glEnable( GL_POINT_SMOOTH );
+    glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glPointSize( 100.0 );
+
     glBufferSubData(GL_ARRAY_BUFFER,0,glbuffersize,t.pos);
     glVertexAttribPointer(shaderAtribute,4,GL_FLOAT,GL_FALSE,0,0);
     glEnableVertexAttribArray(shaderAtribute);
@@ -167,8 +175,7 @@ void initGL() {
   // projection
   glMatrixMode( GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(120.0, (GLfloat)window_width / (GLfloat) window_height, 0.1, 100000.0);
-
+  gluPerspective(120.0, (GLfloat)window_width / (GLfloat) window_height, 0.1, 1000000.0);
 }
 
 void showFPS(float fps) {

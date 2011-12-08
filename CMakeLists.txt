@@ -30,7 +30,7 @@ include_directories(${QT_INCLUDES} ${GLEW_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${C
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/shaders/fragment.glsl
     ${CMAKE_CURRENT_BINARY_DIR}/shaders/fragment.glsl COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/shaders/vertex.glsl
-    ${CMAKE_CURRENT_BINARY_DIR}/shaders/fragment.glsl COPYONLY)
+    ${CMAKE_CURRENT_BINARY_DIR}/shaders/vertex.glsl COPYONLY)
 
 
 set(MAIN_SRCS

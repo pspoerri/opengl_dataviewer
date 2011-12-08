@@ -50,7 +50,7 @@ public:
         if (maxW == 1.0)
                 return;
         for (int i=0;i<elements;i++) {
-            pos[i].w/maxW;
+            pos[i].w = pos[i].w/maxW;
         }
     }
 };
